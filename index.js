@@ -7,6 +7,7 @@ import ExpressMongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import healthRoute from "./routes/health.route";
 
 configDotenv(); // our .env path is in the root of the home folder, so no additional config needed.
 
@@ -71,6 +72,7 @@ app.use(
 );
 
 // API routes
+app.use("/api/v1/healthcheck", healthRoute);
 
 // 404 handler should always be at the bottom (because express match routes from top to bottom)
 app.use((req, res) => {
