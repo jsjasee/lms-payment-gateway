@@ -1,5 +1,5 @@
 import { body, param, query, validationResult } from "express-validator";
-import { ApiError } from "./error.middleware";
+import { ApiError } from "./error.middleware.js";
 
 export const validate = (validations) => {
   return async (req, res, next) => {
