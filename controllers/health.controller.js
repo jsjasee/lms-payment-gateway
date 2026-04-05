@@ -1,7 +1,8 @@
-import db, { getDBStatus } from "../database/db";
+import db, { getDBStatus } from "../database/db.js";
 
 export const checkHealth = async (req, res) => {
   try {
+    console.log(await db());
     const dbStatus = getDBStatus();
 
     const healthStatus = {
@@ -24,7 +25,7 @@ export const checkHealth = async (req, res) => {
     };
 
     const httpStatus =
-      healthStatus.services.database.status === "healthy" ? 200 : 503;
+      healthStatus.services.database.status === "Healthy" ? 200 : 503;
 
     res.status(httpStatus).json(healthStatus);
   } catch (error) {

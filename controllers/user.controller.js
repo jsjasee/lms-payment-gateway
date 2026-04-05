@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import { ApiError, catchAsync } from "../middleware/error.middleware.js";
 import { generateToken } from "../utils/generateToken.js";
+import { deleteMediaFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
 
 export const createUserAccount = catchAsync(async (req, res, next) => {
   const { name, email, password, role = "student" } = req.body;
@@ -62,5 +63,44 @@ export const getCurrentUserProfile = catchAsync(async (req, res) => {
       ...user.toJSON(),
       totalEnrolledCourses: user.totalEnrolledCourses, // this is grabbing a virtual field, with the auto calculation done
     },
+  });
+});
+
+export const updateUserProfile = catchAsync(async (req, res) => {
+  const { name, email, bio } = req.body;
+  const updateData = {
+    name,
+    email: email?.toLowerCase(),
+    bio,
+  };
+
+  // in case user wants to update avatar
+  // we are expecting that multer middleware is there, allowing us to handle the file
+  if (req.file) {
+    const avatarResult = await uploadMedia(req.file.path); // multer will give us the req.file
+    updateData.avatar = avatarResult.secure_url; // avatarResult is a cloudinary object
+
+    // delete old avatar
+    // 1. find the user
+    const user = await User.findById(req.id);
+    if (user.avatar && user.avatar !== "default-avatar.png") {
+      await deleteMediaFromCloudinary(user.avatar); // user.avatar stores the url
+    }
+  }
+
+  // update user and get updated doc
+  const updatedUser = await User.findByIdAndUpdate(req.id, updateData, {
+    new: true,
+    runValidators: true, // data provided by user, best to run validators
+  });
+
+  if (!updatedUser) {
+    throw new ApiError("User not found", 404);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    data: updatedUser,
   });
 });

@@ -3,11 +3,12 @@ import morgan from "morgan";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import ExpressMongoSanitize from "express-mongo-sanitize";
+// import ExpressMongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import healthRoute from "./routes/health.route";
+import healthRoute from "./routes/health.route.js";
+import userRoute from "./routes/user.route.js";
 
 configDotenv(); // our .env path is in the root of the home folder, so no additional config needed.
 
@@ -27,7 +28,7 @@ const limiter = rateLimit({
 
 // middleware for security (but only apply it for those routes that starts with /api)
 app.use("/api", limiter);
-app.use(ExpressMongoSanitize());
+// app.use(ExpressMongoSanitize()); -> no longer compatible with express 5
 app.use(hpp());
 app.use(helmet()); // this one secure Express apps by setting HTTP response headers
 
@@ -71,8 +72,9 @@ app.use(
   }),
 );
 
-// API routes
+// API routes eg. localhost:3000/api/v1/user/signup or /login etc.
 app.use("/api/v1/healthcheck", healthRoute);
+app.use("/api/v1/user", userRoute);
 
 // 404 handler should always be at the bottom (because express match routes from top to bottom)
 app.use((req, res) => {
